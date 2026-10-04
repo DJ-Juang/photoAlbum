@@ -73,33 +73,50 @@ function renderGallery() {
 
     const fragment = document.createDocumentFragment();
 
-    pageItems.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'glass-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col';
-        card.innerHTML = `
-            <div class="img-container">
-                <img src="${getThumbnail(item.url)}" 
-                     loading="lazy" 
-                     alt="${item.country || ''}" 
-                     onerror="this.src='https://via.placeholder.com/400x260?text=Image+Not+Found'">
-                <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm">${item.year || ''} (#${item.id || ''})</div>
-                <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm">${item.region || ''}</div>
-            </div>
-            
-            <div class="p-5 flex flex-col justify-between flex-grow bg-white border-t border-stone-50">
-                ${(item.country || item.province || item.city || item.memo1) ? `
-                    <h3 class="text-sm font-bold text-black mb-2" title="${item.title || ''}">
-                        ${item.country ? `📍 ${item.country}` : ""}   
-                        ${item.province ? ` ${item.province}` : ""}
-                        ${item.city ? ` ${item.city}` : ""}
-                        ${item.memo1 ? `<br><p class="mt-1 text-xs font-semibold text-stone-600">🎯 ${item.memo1}</p>` : ""}
-                    </h3>
-                ` : ""}
-                <a href="${item.url}" target="_blank" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all text-sm mt-auto">打開相簿</a>
-            </div>
-        `;
-        fragment.appendChild(card);
-    });
+	pageItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'glass-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col';
+
+    // 處理右上角國家標籤（若無 country 則不顯示）
+    const countryBadgeHTML = item.country ? `
+        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm">${item.country}</div>
+    ` : '';
+
+    // 組合第一行：province + city 串成一行（自動過濾空值）
+    const provinceCityText = [item.province, item.city].filter(Boolean).join(' ');
+    const locationRowHTML = provinceCityText ? `
+        <div class="text-sm font-bold text-black mb-1">${provinceCityText}</div>
+    ` : '';
+
+    // 組合第二行：memo1（若無則不顯示）
+    const memoRowHTML = item.memo1 ? `
+        <p class="text-xs font-semibold text-stone-600">🎯 ${item.memo1}</p>
+    ` : '';
+
+    // 判斷是否需要顯示文字區塊（若 location 與 memo 皆無則隱藏）
+    const hasInfo = provinceCityText || item.memo1;
+
+    card.innerHTML = `
+        <div class="img-container relative">
+            <img src="${getThumbnail(item.url)}" 
+                 loading="lazy" 
+                 alt="${item.country || ''}" 
+                 onerror="this.src='https://via.placeholder.com/400x260?text=Image+Not+Found'">
+            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm">${item.year || ''} (#${item.id || ''})</div>
+            ${countryBadgeHTML}
+        </div>
+
+        <div class="p-5 flex flex-col justify-between flex-grow bg-white border-t border-stone-50">
+            ${hasInfo ? `
+                <h3 class="mb-2">
+                    ${locationRowHTML}${memoRowHTML}
+                </h3>
+            ` : ''}
+            <a href="${item.url}" target="_blank" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition-all text-sm mt-auto">打開相簿</a>
+        </div>
+    `;
+    fragment.appendChild(card);
+	});
 
     gallery.appendChild(fragment);
     renderPagination();
@@ -129,12 +146,21 @@ function renderPagination() {
         startPage = Math.max(1, endPage - maxVisible + 1);
     }
 
+    // 1. 最第一頁按鈕
     container.appendChild(createBtn('«', 1, false, currentPage === 1));
-    
+
+    // 2. 上一頁按鈕 (<)
+    container.appendChild(createBtn('‹', Math.max(1, currentPage - 1), false, currentPage === 1));
+
+    // 3. 中間數字頁碼
     for (let i = startPage; i <= endPage; i++) {
         container.appendChild(createBtn(i, i, i === currentPage));
     }
-    
+
+    // 4. 下一頁按鈕 (>)
+    container.appendChild(createBtn('›', Math.min(totalPages, currentPage + 1), false, currentPage === totalPages));
+
+    // 5. 最後一頁按鈕
     container.appendChild(createBtn('»', totalPages, false, currentPage === totalPages));
 }
 
