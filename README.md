@@ -1,1 +1,1 @@
-# photoAlumb
+# photoAlbum
