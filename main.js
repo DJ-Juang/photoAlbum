@@ -6,7 +6,7 @@ const itemsPerPage = 12;
 function getThumbnail(url) {
     if (!url) return 'https://via.placeholder.com/400x260?text=No+Preview';
     
-    const match = url.match(/\/d\/([^\/]+/) || url.match(/id=([^&]+)/);
+    const match = url.match(/\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
     if (match && match[1]) {
         return `https://lh3.googleusercontent.com/d/${match[1]}=w600`;
     }
