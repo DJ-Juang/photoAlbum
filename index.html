@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>現代極簡式旅遊雜誌紀錄</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --color-roma-blue: #1A2535;
+      --color-wood: #8C6239;
+      --color-bg: #F9F8F6;
+    }
+    body {
+      background-color: var(--color-bg);
+      font-family: 'PingFang TC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 70s linear infinite;
+    }
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+    .overflow-hidden-lightbox {
+      overflow: hidden !important;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+  <div>
+    <!-- 網頁上方照片輪播區 -->
+    <div class="relative w-full overflow-hidden bg-[#1A2535] py-4 border-b border-stone-200 shadow-sm">
+      <div id="carousel-track" class="marquee-track"></div>
+    </div>
+
+    <!-- 主內容容器 -->
+    <main class="max-w-6xl mx-auto px-4 py-12">
+      
+      <header class="text-center mb-16">
+        <span class="text-xs uppercase tracking-widest text-[#8C6239] font-semibold block mb-3">— TRAVEL JOURNAL —</span>
+        <h1 class="text-3xl font-bold text-slate-800 mb-2">JDJ 遊記</h1>
+        <p class="text-stone-500 font-serif italic">The Grand Tour: Inner Mongo, 2026.08.</p>
+      </header>
+
+      <!-- 篩選與搜尋區（含三個篩選欄位） -->
+      <section class="bg-white border border-stone-200 rounded-lg p-6 md:p-8 mb-12 shadow-sm flex flex-col gap-6">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div class="flex flex-col md:flex-row gap-6 md:gap-12 text-center md:text-left items-center w-full md:w-auto">
+            <div>
+              <span class="text-xs text-stone-400 uppercase tracking-wider block mb-1">已紀錄的足跡</span>
+              <span id="stats" class="text-2xl font-light text-[#1A2535]">0 筆資料</span>
+            </div>
+            <!-- 三個篩選下拉選單 -->
+            <div class="flex flex-wrap gap-3">
+              <select id="countryFilter" class="px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#8C6239]">
+                <option value="all">所有國家</option>
+              </select>
+              <select id="provinceFilter" class="px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#8C6239]">
+                <option value="all">所有省/州</option>
+              </select>
+              <select id="cityFilter" class="px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#8C6239]">
+                <option value="all">所有城市</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-stone-100">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="搜尋 黃山 or 阿里山 ..."
+            class="w-full px-4 py-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8C6239]"
+          >
+          <button id="resetBtn" class="w-full md:w-auto px-5 py-3 border border-stone-300 text-xs tracking-wider text-stone-600 hover:bg-stone-50 transition-all uppercase rounded whitespace-nowrap">
+            重設
+          </button>
+        </div>
+      </section>
+
+      <!-- 照片網格區 -->
+      <section id="gallery" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16"></section>
+
+      <!-- 空狀態提示 -->
+      <div id="emptyState" class="text-center py-12 text-stone-400 hidden">
+        沒有找到符合條件的照片。
+      </div>
+
+      <!-- 分頁按鈕 -->
+      <nav id="pagination" class="flex justify-center items-center gap-2 border-t border-stone-200 pt-8"></nav>
+
+    </main>
+  </div>
+
+  <!-- 燈箱 (Lightbox) 結構 -->
+  <div id="lightbox" class="fixed inset-0 bg-stone-950/95 backdrop-blur-md flex flex-col justify-center items-center z-50 hidden opacity-0 transition-opacity duration-300">
+    <button id="lightbox-close" class="absolute top-6 right-6 text-white hover:text-stone-300 text-2xl p-2 z-50 focus:outline-none">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    
+    <div class="relative max-w-4xl w-full max-h-[80vh] px-4 flex justify-center items-center select-none" id="lightbox-content-box"></div>
+    
+    <div class="mt-6 text-center px-4 max-w-xl">
+      <span id="lightbox-category" class="text-xs tracking-widest text-[#8C6239] uppercase font-bold block mb-1"></span>
+      <h4 id="lightbox-title" class="text-white text-lg font-light tracking-wide"></h4>
+    </div>
+  </div>
+
+  <footer class="text-center py-12 text-xs tracking-widest text-stone-400 uppercase border-t border-stone-200 mt-20">
+    © 2026 Memory Lane. All Rights Reserved.
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
