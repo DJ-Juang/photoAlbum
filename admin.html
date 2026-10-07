@@ -66,7 +66,7 @@ class="bg-blue-600 text-white px-4 py-2 rounded">
 
 <div class="space-y-4">
 
-<div class="grid grid-cols-2 gap-4">
+<div class="grid grid-cols-3 gap-4">
     <div>
         <label class="block mb-1">年份 (year)</label>
         <input id="year" class="w-full border rounded p-2" placeholder="例如: 2024">
@@ -74,6 +74,13 @@ class="bg-blue-600 text-white px-4 py-2 rounded">
     <div>
         <label class="block mb-1">區域 (region)</label>
         <input id="region" class="w-full border rounded p-2" placeholder="例如: 亞洲">
+    </div>
+    <div>
+        <label class="block mb-1">類型 (type)</label>
+        <select id="type" class="w-full border rounded p-2 bg-white">
+            <option value="image" selected>image (照片)</option>
+            <option value="video">video (影片)</option>
+        </select>
     </div>
 </div>
 
@@ -93,7 +100,7 @@ class="bg-blue-600 text-white px-4 py-2 rounded">
 </div>
 
 <div>
-<label class="block mb-1">Google Drive 照片連結 (url)</label>
+<label class="block mb-1">Google Drive 連結 (url)</label>
 <input id="url" class="w-full border rounded p-2" placeholder="https://drive.google.com/...">
 </div>
 
@@ -210,6 +217,8 @@ function appendData(){
             document.getElementById("year").value.trim();
         const region =
             document.getElementById("region").value.trim();
+        const type =
+            document.getElementById("type").value; // 取得 type 欄位值
         const country =
             document.getElementById("country").value.trim();
         const province =
@@ -225,6 +234,7 @@ function appendData(){
             id: nextId,
             year: year,
             region: region,
+            type: type, // 寫入 type
             country: country,
             url: url,
             province: province,
@@ -247,8 +257,9 @@ function appendData(){
         document.getElementById("nextId").innerText =
             nextId;
         
-        // 清空 URL 欄位，其餘保留
+        // 清空 URL 欄位，type 維持預設 image，其餘保留
         document.getElementById("url").value = "";
+        document.getElementById("type").value = "image";
         
         alert("Append Done!!");
     }
