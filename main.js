@@ -55,8 +55,27 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 });
 
+// 💡 輔助函式：自動解析 Google Drive 網址中的檔案 ID
+function getGoogleDriveId(url) {
+    if (!url) return null;
+    const regId = /\/file\/d\/([a-zA-Z0-9_-]+)/;
+    const regIdQuery = /[?&]id=([a-zA-Z0-9_-]+)/;
+    
+    const match1 = url.match(regId);
+    if (match1 && match1[1]) return match1[1];
+    
+    const match2 = url.match(regIdQuery);
+    if (match2 && match2[1]) return match2[1];
+    
+    return null;
+}
+
 function getThumbnail(url) {
     if (!url) return 'https://via.placeholder.com/400x260?text=No+Preview';
+    const driveId = getGoogleDriveId(url);
+    if (driveId) {
+        return `https://drive.google.com/thumbnail?sz=w1200&id=${driveId}`;
+    }
     const match = url.match(/\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
     if (match && match[1]) {
         return `https://lh3.googleusercontent.com/d/${match[1]}=w600`;
@@ -78,6 +97,11 @@ function initCarousel() {
         return `
             <div class="w-48 h-32 mx-2 flex-shrink-0 overflow-hidden rounded shadow-sm border border-stone-800 bg-stone-900 relative group cursor-pointer" onclick="openLightbox(${item.id})">
               <img src="${thumb}" alt="${item.country || ''}" class="w-full h-full object-cover opacity-75 hover:opacity-100 transition-opacity duration-300">
+              ${item.type === 'video' ? `
+                <div class="absolute inset-0 flex items-center justify-center bg-black/30 text-white pointer-events-none">
+                  <i class="fa-solid fa-play text-xs opacity-85"></i>
+                </div>
+              ` : ''}
             </div>
         `;
     }).join('');
@@ -142,10 +166,19 @@ function renderGallery() {
 
     pageItems.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'glass-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col bg-white border border-stone-200';
+        card.className = 'glass-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col bg-white border border-stone-200 group';
         
         const countryBadgeHTML = item.country ? `
-            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm">${item.country}</div>
+            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm z-10">${item.country}</div>
+        ` : '';
+
+        // 如果是影片類型，在卡片上顯示播放按鈕圖示，讓使用者一眼識別
+        const videoOverlayHTML = item.type === 'video' ? `
+            <div class="absolute inset-0 flex items-center justify-center bg-stone-900 bg-opacity-30 z-10 text-white transition-opacity duration-300">
+              <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-play text-lg translate-x-0.5"></i>
+              </div>
+            </div>
         ` : '';
 
         const provinceCityText = [item.province, item.city].filter(Boolean).join(' ');
@@ -164,10 +197,11 @@ function renderGallery() {
                 <img src="${getThumbnail(item.url)}" 
                      loading="lazy" 
                      alt="${item.country || ''}" 
-                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                      onerror="this.src='https://via.placeholder.com/400x260?text=Image+Not+Found'">
-                <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm">${item.year || ''} (#${item.id || ''})</div>
+                <div class="absolute top-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-blue-600 shadow-sm z-10">${item.year || ''} (#${item.id || ''})</div>
                 ${countryBadgeHTML}
+                ${videoOverlayHTML}
             </div>
             
             <div class="p-5 flex flex-col justify-between flex-grow bg-white border-t border-stone-50">
@@ -298,10 +332,24 @@ window.openLightbox = function(id) {
     }
 
     if (contentBox) {
-        const fullImgUrl = getThumbnail(item.url);
-        contentBox.innerHTML = `
-          <img src="${fullImgUrl}" alt="" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl">
-        `;
+        const driveId = getGoogleDriveId(item.url);
+        
+        // 判斷若為影片類型且有 Google Drive ID，則使用線上播放器嵌入燈箱；否則以圖片顯示
+        if (item.type === 'video' && driveId) {
+            contentBox.innerHTML = `
+              <iframe 
+                src="https://drive.google.com/file/d/${driveId}/preview" 
+                class="w-full max-w-4xl aspect-video rounded-lg shadow-2xl bg-black border-none" 
+                allow="autoplay" 
+                allowfullscreen>
+              </iframe>
+            `;
+        } else {
+            const fullImgUrl = getThumbnail(item.url);
+            contentBox.innerHTML = `
+              <img src="${fullImgUrl}" alt="" class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl">
+            `;
+        }
     }
 };
 

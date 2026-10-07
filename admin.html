@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>旅遊資料管理工具</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body{
+    background:#f8f8f8;
+}
+textarea{
+    font-family:monospace;
+}
+</style>
+</head>
+
+<body class="max-w-4xl mx-auto p-6">
+
+<h1 class="text-2xl font-bold mb-6">
+旅遊資料管理工具
+</h1>
+
+<!-- 計算 ID -->
+
+<div class="bg-white rounded shadow p-6 mb-6">
+
+<h2 class="font-bold mb-3">
+步驟 1：貼上 data.json
+</h2>
+
+<textarea
+id="dataSource"
+rows="10"
+class="w-full border rounded p-3"
+placeholder="請貼上整個 travel-data.json">
+</textarea>
+
+<div class="mt-4 flex gap-3 items-center">
+
+<button
+onclick="calculateNextId()"
+class="bg-blue-600 text-white px-4 py-2 rounded">
+計算下一個 ID
+</button>
+
+<span class="font-bold">
+下一個 ID：
+<span id="nextId">?</span>
+</span>
+
+</div>
+
+</div>
+
+<!-- 新增資料 -->
+
+<div class="bg-white rounded shadow p-6">
+
+<h2 class="font-bold mb-4">
+步驟 2：新增照片資料
+</h2>
+
+<div class="space-y-4">
+
+<div class="grid grid-cols-2 gap-4">
+    <div>
+        <label class="block mb-1">年份 (year)</label>
+        <input id="year" class="w-full border rounded p-2" placeholder="例如: 2024">
+    </div>
+    <div>
+        <label class="block mb-1">區域 (region)</label>
+        <input id="region" class="w-full border rounded p-2" placeholder="例如: 亞洲">
+    </div>
+</div>
+
+<div class="grid grid-cols-3 gap-4">
+    <div>
+        <label class="block mb-1">國家 (country)</label>
+        <input id="country" class="w-full border rounded p-2" placeholder="例如: 中國">
+    </div>
+    <div>
+        <label class="block mb-1">省份 (province)</label>
+        <input id="province" class="w-full border rounded p-2" placeholder="例如: 上海直轄市">
+    </div>
+    <div>
+        <label class="block mb-1">城市 (city)</label>
+        <input id="city" class="w-full border rounded p-2" placeholder="例如: 上海">
+    </div>
+</div>
+
+<div>
+<label class="block mb-1">Google Drive 照片連結 (url)</label>
+<input id="url" class="w-full border rounded p-2" placeholder="https://drive.google.com/...">
+</div>
+
+<div>
+<label class="block mb-1">備註/說明 (memo1)</label>
+<input id="memo1" class="w-full border rounded p-2" placeholder="例如: 外灘">
+</div>
+
+<div class="flex gap-3 pt-2">
+    
+<button
+onclick="appendData()"
+class="bg-purple-600 text-white px-4 py-2 rounded">
+Append一筆
+</button>
+    
+<button
+onclick="copyData()"
+class="bg-orange-600 text-white px-4 py-2 rounded">
+複製結果
+</button>
+
+<button
+onclick="downloadJson()"
+class="bg-blue-600 text-white px-4 py-2 rounded">
+下載json檔
+</button>
+
+</div>
+
+<div>
+
+<label class="block mb-1">
+產生結果
+</label>
+
+<textarea
+id="output"
+rows="8"
+class="w-full border rounded p-3"></textarea>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let nextId = null;
+
+function calculateNextId(){
+
+    try{
+
+        const text =
+            document.getElementById("dataSource").value;
+
+        const data =
+            JSON.parse(text);
+
+        const ids =
+            data.map(item => item.id);
+
+        const maxId =
+            Math.max(...ids);
+
+        nextId = maxId + 1;
+
+        document.getElementById("nextId").innerText =
+            nextId;
+
+    }
+    catch(error){
+
+        alert(
+            "JSON格式錯誤\n\n" +
+            error.message
+        );
+
+        console.error(error);
+    }
+}
+
+function copyData(){
+
+    const output =
+        document.getElementById("output");
+
+    output.select();
+
+    document.execCommand("copy");
+
+    alert("已複製到剪貼簿");
+}
+
+function appendData(){
+
+    if(nextId === null){
+
+        alert("請先計算下一個 ID");
+        return;
+    }
+
+    try{
+
+        const source =
+            document.getElementById("dataSource").value;
+
+        const data =
+            JSON.parse(source);
+
+        const year =
+            document.getElementById("year").value.trim();
+        const region =
+            document.getElementById("region").value.trim();
+        const country =
+            document.getElementById("country").value.trim();
+        const province =
+            document.getElementById("province").value.trim();
+        const city =
+            document.getElementById("city").value.trim();
+        const url =
+            document.getElementById("url").value.trim();
+        const memo1 =
+            document.getElementById("memo1").value.trim();
+
+        const newItem = {
+            id: nextId,
+            year: year,
+            region: region,
+            country: country,
+            url: url,
+            province: province,
+            city: city,
+            memo1: memo1
+        };
+
+        data.push(newItem);
+
+        const result =
+            JSON.stringify(data, null, 2);
+
+        document.getElementById("output").value =
+            result;
+
+        // 讓下一筆新增時不用重新貼資料
+        document.getElementById("dataSource").value =
+            result;
+        nextId++;
+        document.getElementById("nextId").innerText =
+            nextId;
+        
+        // 清空 URL 欄位，其餘保留
+        document.getElementById("url").value = "";
+        
+        alert("Append Done!!");
+    }
+    catch(error){
+        alert(
+            "JSON格式錯誤\n\n" +
+            error.message
+        );
+        console.error(error);
+    }
+}
+
+function downloadJson(){
+    const jsonContent =
+        document.getElementById("output").value;
+    if(!jsonContent.trim()){
+        alert("沒有可下載的資料");
+        return;
+    }
+    try{
+        JSON.parse(jsonContent);
+    }catch(error){
+        alert("JSON格式錯誤，無法下載");
+        return;
+    }
+    const blob =
+        new Blob(
+            [jsonContent],
+            { type: "application/json" }
+        );
+    const url =
+        URL.createObjectURL(blob);
+    const a =
+        document.createElement("a");
+    a.href = url;
+    a.download = "data.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+</script>
+
+</body>
+</html>
