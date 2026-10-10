@@ -269,7 +269,15 @@ function handleFilter() {
         if (!matchCountry || !matchProvince || !matchCity) return false;
         if (!keyword) return true;
 
-        const text = [item.region, item.country, item.province, item.city, item.memo1].join(' ').toLowerCase();
+        // 將年份轉為字串並與其他欄位結合成完整的檢索字串
+        const text = [
+            String(item.year || ''),
+            String(item.region || ''),
+            String(item.country || ''),
+            String(item.province || ''),
+            String(item.city || ''),
+            String(item.memo1 || '')
+        ].join(' ').toLowerCase();
 
         if (keyword.includes(' and ')) {
             const keywords = keyword.split(/\s+and\s+/i);
@@ -287,7 +295,6 @@ function handleFilter() {
     currentPage = 1;
     renderGallery();
 }
-
 // 燈箱互動邏輯
 function setupLightbox() {
     const lightbox = document.getElementById('lightbox');
