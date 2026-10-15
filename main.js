@@ -4,35 +4,31 @@ let currentPage = 1;
 const itemsPerPage = 12;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 透過 fetch 讀取純 JSON 格式的 data.json 檔案
     fetch('data.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('無法載入 data.json 檔案');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             rawData = data;
             filteredData = [...rawData];
 
             initCountryFilter();
             updateProvinceOptions('all');
-            initCarousel(); // 初始化頂部輪播區
 
+            // 綁定篩選條件變更（但此時不主動渲染，或只更新篩選範圍）
             document.getElementById('countryFilter').onchange = (e) => { 
                 updateProvinceOptions(e.target.value); 
-                handleFilter(); 
             };
             
             document.getElementById('provinceFilter').onchange = (e) => {
                 const selectedCountry = document.getElementById('countryFilter').value;
                 updateCityOptions(selectedCountry, e.target.value);
-                handleFilter();
             };
 
-            document.getElementById('cityFilter').onchange = handleFilter;
-            document.getElementById('searchInput').oninput = handleFilter;
+            document.getElementById('cityFilter').onchange = () => {};
+            
+            // 💡 點擊 Go 按鈕時才真正執行篩選與渲染
+            document.getElementById('goBtn').onclick = () => {
+                handleFilter(); // 執行篩選並內部會呼叫 renderGallery()
+            };
 
             document.getElementById('resetBtn').onclick = () => {
                 document.getElementById('countryFilter').value = 'all';
@@ -40,20 +36,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById('searchInput').value = '';
                 filteredData = [...rawData];
                 currentPage = 1;
-                renderGallery();
+                renderGallery(); // 重設時也可以直接呈現或清空
             };
 
-            renderGallery();
             setupLightbox();
         })
         .catch(error => {
             console.error('載入資料發生錯誤:', error);
-            const gallery = document.getElementById('gallery');
-            if (gallery) {
-                gallery.innerHTML = '<p class="col-span-full text-center text-red-500">無法成功載入照片資料，請確認 data.json 格式與路徑是否正確。</p>';
-            }
         });
 });
+
 
 // 💡 輔助函式：自動解析 Google Drive 網址中的檔案 ID
 function getGoogleDriveId(url) {
@@ -74,14 +66,24 @@ function getThumbnail(url) {
     if (!url) return 'https://via.placeholder.com/400x260?text=No+Preview';
     const driveId = getGoogleDriveId(url);
     if (driveId) {
-        return `https://drive.google.com/thumbnail?sz=w1200&id=${driveId}`;
-    }
-    const match = url.match(/\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
-    if (match && match[1]) {
-        return `https://lh3.googleusercontent.com/d/${match[1]}=w600`;
+        // 改用這個格式，通常對公開分享的圖片穩定度更高
+        return `https://lh3.googleusercontent.com/d/${driveId}=w1200`;
     }
     return url;
 }
+
+// function getThumbnail(url) {
+//    if (!url) return 'https://via.placeholder.com/400x260?text=No+Preview';
+//    const driveId = getGoogleDriveId(url);
+//    if (driveId) {
+//        return `https://drive.google.com/thumbnail?sz=w1200&id=${driveId}`;
+//    }
+//    const match = url.match(/\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
+//    if (match && match[1]) {
+//        return `https://lh3.googleusercontent.com/d/${match[1]}=w600`;
+//    }
+//    return url;
+//}
 
 // 隨機取 30 張照片進行頂部輪播
 function initCarousel() {
