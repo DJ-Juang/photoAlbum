@@ -24233,5 +24233,27 @@
     "province": "",
     "city": "京都",
     "memo1": "清水"
-    }
+    },
+    {
+    "id": 2402,
+    "year": "2026",
+    "region": "亞洲",
+    "type": "image",
+    "country": "日本",
+    "url": "https://drive.google.com/file/d/1X0Bt2uL2EIGfHhE4tii3OPSROIoemToe/view?usp=drivesdk",
+    "province": "",
+    "city": "京都",
+    "memo1": "清水寺"
+  },
+  {
+    "id": 2403,
+    "year": "2026",
+    "region": "亞洲",
+    "type": "image",
+    "country": "日本",
+    "url": "https://drive.google.com/file/d/1PEcGVOmujDoNujUCS8vxI_J50QDCTNgy/view?usp=drivesdk",
+    "province": "",
+    "city": "京都",
+    "memo1": "清水寺-竹林小徑"
+  }
 ]
