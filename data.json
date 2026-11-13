@@ -24235,6 +24235,17 @@
     "memo1": "清水"
     },
     {
+    "id": 2401,
+    "year": "2026",
+    "region": "亞洲",
+    "type": "image",
+    "country": "日本",
+    "url": "https://drive.google.com/file/d/1hqu5Iii7ODch1eXPSySlBS5-SAAm32UN/view?usp=drive_link",
+    "province": "",
+    "city": "京都",
+    "memo1": "清水寺"
+  },
+  {
     "id": 2402,
     "year": "2026",
     "region": "亞洲",
