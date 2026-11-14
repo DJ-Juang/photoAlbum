@@ -275,6 +275,7 @@ function handleFilter() {
         const text = [
             String(item.year || ''),
             String(item.region || ''),
+            String(item.type || ''),
             String(item.country || ''),
             String(item.province || ''),
             String(item.city || ''),
