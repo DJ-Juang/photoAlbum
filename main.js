@@ -4,48 +4,61 @@ let currentPage = 1;
 const itemsPerPage = 12;
 
 document.addEventListener("DOMContentLoaded", () => {
-    fetch('data.json')
-        .then(response => response.json())
-        .then(data => {
-            rawData = data;
-            filteredData = [...rawData];
-
-            initCountryFilter();
-            updateProvinceOptions('all');
-
-            // 綁定篩選條件變更（但此時不主動渲染，或只更新篩選範圍）
-            document.getElementById('countryFilter').onchange = (e) => { 
-                updateProvinceOptions(e.target.value); 
-            };
-            
-            document.getElementById('provinceFilter').onchange = (e) => {
-                const selectedCountry = document.getElementById('countryFilter').value;
-                updateCityOptions(selectedCountry, e.target.value);
-            };
-
-            document.getElementById('cityFilter').onchange = () => {};
-            
-            // 💡 點擊 Go 按鈕時才真正執行篩選與渲染
-            document.getElementById('goBtn').onclick = () => {
-                handleFilter(); // 執行篩選並內部會呼叫 renderGallery()
-            };
-
-            document.getElementById('resetBtn').onclick = () => {
-                document.getElementById('countryFilter').value = 'all';
-                updateProvinceOptions('all');
-                document.getElementById('searchInput').value = '';
-                filteredData = [...rawData];
-                currentPage = 1;
-                renderGallery(); // 重設時也可以直接呈現或清空
-            };
-
-            setupLightbox();
+    // 💡 同時載入 data1.json 與 data2.json
+    Promise.all([
+        fetch('data1.json').then(res => {
+            if (!res.ok) throw new Error('無法載入 data1.json');
+            return res.json();
+        }),
+        fetch('data2.json').then(res => {
+            if (!res.ok) throw new Error('無法載入 data2.json');
+            return res.json();
         })
-        .catch(error => {
-            console.error('載入資料發生錯誤:', error);
-        });
-});
+    ])
+    .then(([data1, data2]) => {
+        // 將兩份資料合併為一個完整的 rawData
+        rawData = [...data1, ...data2];
+        filteredData = [...rawData];
 
+        initCountryFilter();
+        updateProvinceOptions('all');
+        // initCarousel(); // 如果需要頂部輪播，可在此初始化
+
+        document.getElementById('countryFilter').onchange = (e) => { 
+            updateProvinceOptions(e.target.value); 
+        };
+        
+        document.getElementById('provinceFilter').onchange = (e) => {
+            const selectedCountry = document.getElementById('countryFilter').value;
+            updateCityOptions(selectedCountry, e.target.value);
+        };
+
+        document.getElementById('cityFilter').onchange = () => {};
+        
+        // 點擊 Go 按鈕時才真正執行篩選與渲染
+        document.getElementById('goBtn').onclick = () => {
+            handleFilter(); 
+        };
+
+        document.getElementById('resetBtn').onclick = () => {
+            document.getElementById('countryFilter').value = 'all';
+            updateProvinceOptions('all');
+            document.getElementById('searchInput').value = '';
+            filteredData = [...rawData];
+            currentPage = 1;
+            renderGallery(); 
+        };
+
+        setupLightbox();
+    })
+    .catch(error => {
+        console.error('載入資料發生錯誤:', error);
+        const gallery = document.getElementById('gallery');
+        if (gallery) {
+            gallery.innerHTML = '<p class="col-span-full text-center text-red-500">無法成功載入資料檔案，請確認 data1.json 與 data2.json 格式與路徑是否正確。</p>';
+        }
+    });
+});
 
 // 💡 輔助函式：自動解析 Google Drive 網址中的檔案 ID
 function getGoogleDriveId(url) {
