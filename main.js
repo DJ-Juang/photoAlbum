@@ -363,6 +363,7 @@ window.openLightbox = function(id) {
               <iframe 
                 src="https://drive.google.com/file/d/${driveId}/preview" 
                 class="w-full max-w-4xl aspect-video rounded-lg shadow-2xl bg-black border-none" 
+                style="transform: translateZ(0); -webkit-transform: translateZ(0); isolation: isolate;"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowfullscreen>
               </iframe>
