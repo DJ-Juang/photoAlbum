@@ -359,15 +359,33 @@ window.openLightbox = function(id) {
         
         // 判斷若為影片類型且有 Google Drive ID，則使用線上播放器嵌入燈箱；否則以圖片顯示
         if (item.type === 'video' && driveId) {
-            contentBox.innerHTML = `
-              <iframe 
-                src="https://drive.google.com/file/d/${driveId}/preview" 
-                class="w-full max-w-4xl aspect-video rounded-lg shadow-2xl bg-black border-none" 
-                style="transform: translateZ(0); -webkit-transform: translateZ(0); isolation: isolate;"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-              </iframe>
-            `;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                // 📱 手機版：提供直接下載/觀看連結，使用彈性按鈕且不強行跳離網頁
+                const directVideoUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
+                contentBox.innerHTML = `
+                  <div class="flex flex-col items-center justify-center p-8 bg-stone-900 rounded-lg shadow-2xl text-center max-w-sm w-full">
+                    <div class="w-16 h-16 rounded-full bg-[#8C6239] flex items-center justify-center text-white text-2xl mb-4 shadow-md">
+                      <i class="fa-solid fa-film"></i>
+                    </div>
+                    <p class="text-white text-sm mb-6 font-medium">點擊下方按鈕即可下載並播放影片，播放完畢可直接返回網頁</p>
+                    <a href="${directVideoUrl}" class="px-6 py-3 bg-white text-slate-900 rounded-lg font-bold hover:bg-stone-200 transition-all text-sm shadow">
+                      播放 / 下載影片
+                    </a>
+                  </div>
+                `;
+            } else {
+                // 💻 電腦版：維持原本的 iframe 預覽
+                contentBox.innerHTML = `
+                  <iframe 
+                    src="https://drive.google.com/file/d/${driveId}/preview" 
+                    class="w-full max-w-4xl aspect-video rounded-lg shadow-2xl bg-black border-none" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                  </iframe>
+                `;
+            }
         } else {
             const fullImgUrl = getThumbnail(item.url);
             contentBox.innerHTML = `
