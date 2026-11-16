@@ -359,17 +359,13 @@ window.openLightbox = function(id) {
         
         // 判斷若為影片類型且有 Google Drive ID，則使用線上播放器嵌入燈箱；否則以圖片顯示
         if (item.type === 'video' && driveId) {
-            // 轉換為 Google Drive 直連串流網址
-            const videoUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
             contentBox.innerHTML = `
-              <video 
-                src="${videoUrl}" 
-                class="w-full max-w-4xl max-h-[75vh] rounded-lg shadow-2xl bg-black object-contain" 
-                controls 
-                playsinline 
-                autoplay>
-                您的瀏覽器不支援影片播放
-              </video>
+              <iframe 
+                src="https://drive.google.com/file/d/${driveId}/preview" 
+                class="w-full max-w-4xl aspect-video rounded-lg shadow-2xl bg-black border-none" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
             `;
         } else {
             const fullImgUrl = getThumbnail(item.url);
